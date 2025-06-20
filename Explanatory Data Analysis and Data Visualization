@@ -1,0 +1,913 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNmnled1qZ9KtMUiAaF0k6I",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/C-Lion/HU-DS-BC/blob/main/Explanatory%20Data%20Analysis%20and%20Data%20Visualization\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Project Scope and Limitations\n",
+        "\n",
+        "This analysis originally sought to determine whether the emotional tone of songs (as measured by valence and energy) changed significantly after the murder of George Floyd on May 25, 2020.\n",
+        "\n",
+        "However, after inspecting the dataset, it became clear that:\n",
+        "\n",
+        "- The majority of `release_date` values were missing or invalid.\n",
+        "- The valid dates in the dataset ranged from 1921 to 2017.\n",
+        "- No data was available for the year 2020 or later, making it impossible to compare song emotional tone before and after the target date.\n",
+        "\n",
+        "As a result, the dataset could not support the intended research question. Nevertheless, this process demonstrated the importance of verifying data coverage early in the analysis workflow. The notebook includes all verification steps to transparently document the limitations encountered.\n"
+      ],
+      "metadata": {
+        "id": "0FHsLtaMt-cw"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Research Question\n",
+        "How did the emotional tone of popular songs—measured by valence and energy—change during key periods of the Civil Rights Movement (1940–1980), and how might these changes reflect broader societal shifts or resistance?"
+      ],
+      "metadata": {
+        "id": "TspcJknvgKPQ"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Problem Statement\n",
+        "Popular music has historically served as both a reflection and an instrument of social sentiment. The Civil Rights Movement (1954–1968) marked a critical era in American history, encompassing both widespread activism and systemic pushback. This analysis seeks to understand how the emotional tone of popular songs—as quantified by Spotify's valence (positivity) and energy (intensity) features—varied during this era.\n",
+        "\n",
+        "By segmenting the timeline into pre-Movement (1940–1953), during the Movement (1954–1968), and post-Movement (1969–1980), we aim to explore whether musical expression mirrored evolving societal tensions, cultural resilience, or hope. This work contributes to the broader conversation on how data science can uncover cultural insights and how music may reflect or resist dominant narratives during times of social change.\n"
+      ],
+      "metadata": {
+        "id": "EyTEd4huhvw8"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Hypothesis\n",
+        "\n",
+        "The emotional tone of popular music—reflected in valence and energy—shifted during the Civil Rights Movement. We hypothesize that music released during the movement (1954–1968) may exhibit lower valence and/or higher energy, corresponding to heightened societal tensions and calls for resistance.\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "MX5pOf9HjRvk"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Setting up the environent for the data project in Python.\n"
+      ],
+      "metadata": {
+        "id": "L_tIiKIkb4U3"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "CDhdTwgWgJug"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install pip"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ZAgQCDp-bwV7",
+        "outputId": "ef61202b-debc-49a7-8666-cfc1e1126485"
+      },
+      "execution_count": 45,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: pip in /usr/local/lib/python3.11/dist-packages (25.1.1)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install --upgrade pip\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "GB9-ATi8cAls",
+        "outputId": "21acc267-6cfd-493a-b47f-4c77418c8b7c"
+      },
+      "execution_count": 46,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: pip in /usr/local/lib/python3.11/dist-packages (25.1.1)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Set up Numerical Python and Data Structures:"
+      ],
+      "metadata": {
+        "id": "eQXg5dF8ciPY"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install numpy\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Zn7zkzEkcD8o",
+        "outputId": "d2909fb6-ab6b-44c1-ab14-659835fdef4c"
+      },
+      "execution_count": 47,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: numpy in /usr/local/lib/python3.11/dist-packages (2.0.2)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install pandas"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ypWHjVbdcw7k",
+        "outputId": "4dbbdae3-a403-4fd5-e86d-8f6d7a3be543"
+      },
+      "execution_count": 48,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: pandas in /usr/local/lib/python3.11/dist-packages (2.2.2)\n",
+            "Requirement already satisfied: numpy>=1.23.2 in /usr/local/lib/python3.11/dist-packages (from pandas) (2.0.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.11/dist-packages (from pandas) (2.9.0.post0)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.11/dist-packages (from pandas) (2025.2)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.11/dist-packages (from pandas) (2025.2)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Set up Visualization Libraries"
+      ],
+      "metadata": {
+        "id": "samoCYKJc2xX"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install matplotlib\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "SP-5lWH9cy3j",
+        "outputId": "1f0adb73-dc5d-4d51-eb08-6d5f63154bfc"
+      },
+      "execution_count": 49,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: matplotlib in /usr/local/lib/python3.11/dist-packages (3.10.0)\n",
+            "Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (1.3.2)\n",
+            "Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (0.12.1)\n",
+            "Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (4.58.4)\n",
+            "Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (1.4.8)\n",
+            "Requirement already satisfied: numpy>=1.23 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (2.0.2)\n",
+            "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (24.2)\n",
+            "Requirement already satisfied: pillow>=8 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (11.2.1)\n",
+            "Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (3.2.3)\n",
+            "Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.11/dist-packages (from matplotlib) (2.9.0.post0)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil>=2.7->matplotlib) (1.17.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install seaborn"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "V1FUv-uSdK1q",
+        "outputId": "be5d4e4a-2203-4490-f439-591601683af9"
+      },
+      "execution_count": 50,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: seaborn in /usr/local/lib/python3.11/dist-packages (0.13.2)\n",
+            "Requirement already satisfied: numpy!=1.24.0,>=1.20 in /usr/local/lib/python3.11/dist-packages (from seaborn) (2.0.2)\n",
+            "Requirement already satisfied: pandas>=1.2 in /usr/local/lib/python3.11/dist-packages (from seaborn) (2.2.2)\n",
+            "Requirement already satisfied: matplotlib!=3.6.1,>=3.4 in /usr/local/lib/python3.11/dist-packages (from seaborn) (3.10.0)\n",
+            "Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (1.3.2)\n",
+            "Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (0.12.1)\n",
+            "Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (4.58.4)\n",
+            "Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (1.4.8)\n",
+            "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (24.2)\n",
+            "Requirement already satisfied: pillow>=8 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (11.2.1)\n",
+            "Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (3.2.3)\n",
+            "Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.6.1,>=3.4->seaborn) (2.9.0.post0)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.11/dist-packages (from pandas>=1.2->seaborn) (2025.2)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.11/dist-packages (from pandas>=1.2->seaborn) (2025.2)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil>=2.7->matplotlib!=3.6.1,>=3.4->seaborn) (1.17.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "##Geospatail Visualization tools"
+      ],
+      "metadata": {
+        "id": "iSUWfyf44B_q"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install folium"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "C6lESEQ93uvc",
+        "outputId": "e655293a-2c94-4fe8-d7be-b142bdc66b3a"
+      },
+      "execution_count": 51,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: folium in /usr/local/lib/python3.11/dist-packages (0.19.7)\n",
+            "Requirement already satisfied: branca>=0.6.0 in /usr/local/lib/python3.11/dist-packages (from folium) (0.8.1)\n",
+            "Requirement already satisfied: jinja2>=2.9 in /usr/local/lib/python3.11/dist-packages (from folium) (3.1.6)\n",
+            "Requirement already satisfied: numpy in /usr/local/lib/python3.11/dist-packages (from folium) (2.0.2)\n",
+            "Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (from folium) (2.32.3)\n",
+            "Requirement already satisfied: xyzservices in /usr/local/lib/python3.11/dist-packages (from folium) (2025.4.0)\n",
+            "Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.11/dist-packages (from jinja2>=2.9->folium) (3.0.2)\n",
+            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests->folium) (3.4.2)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.11/dist-packages (from requests->folium) (3.10)\n",
+            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests->folium) (2.4.0)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.11/dist-packages (from requests->folium) (2025.6.15)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install geopandas"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ImTpqXu74LiR",
+        "outputId": "6aae31d3-b049-4788-e344-aa358fcab3e8"
+      },
+      "execution_count": 52,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: geopandas in /usr/local/lib/python3.11/dist-packages (1.0.1)\n",
+            "Requirement already satisfied: numpy>=1.22 in /usr/local/lib/python3.11/dist-packages (from geopandas) (2.0.2)\n",
+            "Requirement already satisfied: pyogrio>=0.7.2 in /usr/local/lib/python3.11/dist-packages (from geopandas) (0.11.0)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.11/dist-packages (from geopandas) (24.2)\n",
+            "Requirement already satisfied: pandas>=1.4.0 in /usr/local/lib/python3.11/dist-packages (from geopandas) (2.2.2)\n",
+            "Requirement already satisfied: pyproj>=3.3.0 in /usr/local/lib/python3.11/dist-packages (from geopandas) (3.7.1)\n",
+            "Requirement already satisfied: shapely>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from geopandas) (2.1.1)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.11/dist-packages (from pandas>=1.4.0->geopandas) (2.9.0.post0)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.11/dist-packages (from pandas>=1.4.0->geopandas) (2025.2)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.11/dist-packages (from pandas>=1.4.0->geopandas) (2025.2)\n",
+            "Requirement already satisfied: certifi in /usr/local/lib/python3.11/dist-packages (from pyogrio>=0.7.2->geopandas) (2025.6.15)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil>=2.8.2->pandas>=1.4.0->geopandas) (1.17.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Set up Scientific Python"
+      ],
+      "metadata": {
+        "id": "I7GNby0NdSKm"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install scipy"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5u5qpKRDdPdW",
+        "outputId": "52663c84-e01a-402d-9d6a-477bd9151470"
+      },
+      "execution_count": 53,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: scipy in /usr/local/lib/python3.11/dist-packages (1.15.3)\n",
+            "Requirement already satisfied: numpy<2.5,>=1.23.5 in /usr/local/lib/python3.11/dist-packages (from scipy) (2.0.2)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install statsmodels"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "e52ThHLc4hxw",
+        "outputId": "fd8347a4-9ec9-4aa1-bf03-0a89c8084600"
+      },
+      "execution_count": 54,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: statsmodels in /usr/local/lib/python3.11/dist-packages (0.14.4)\n",
+            "Requirement already satisfied: numpy<3,>=1.22.3 in /usr/local/lib/python3.11/dist-packages (from statsmodels) (2.0.2)\n",
+            "Requirement already satisfied: scipy!=1.9.2,>=1.8 in /usr/local/lib/python3.11/dist-packages (from statsmodels) (1.15.3)\n",
+            "Requirement already satisfied: pandas!=2.1.0,>=1.4 in /usr/local/lib/python3.11/dist-packages (from statsmodels) (2.2.2)\n",
+            "Requirement already satisfied: patsy>=0.5.6 in /usr/local/lib/python3.11/dist-packages (from statsmodels) (1.0.1)\n",
+            "Requirement already satisfied: packaging>=21.3 in /usr/local/lib/python3.11/dist-packages (from statsmodels) (24.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.11/dist-packages (from pandas!=2.1.0,>=1.4->statsmodels) (2.9.0.post0)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.11/dist-packages (from pandas!=2.1.0,>=1.4->statsmodels) (2025.2)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.11/dist-packages (from pandas!=2.1.0,>=1.4->statsmodels) (2025.2)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil>=2.8.2->pandas!=2.1.0,>=1.4->statsmodels) (1.17.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install -U scikit-learn"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "1QrTwZtUdb1u",
+        "outputId": "f3ec82c0-7d35-4dc7-fe51-52b5daaf80c9"
+      },
+      "execution_count": 55,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: scikit-learn in /usr/local/lib/python3.11/dist-packages (1.7.0)\n",
+            "Requirement already satisfied: numpy>=1.22.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (2.0.2)\n",
+            "Requirement already satisfied: scipy>=1.8.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (1.15.3)\n",
+            "Requirement already satisfied: joblib>=1.2.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (1.5.1)\n",
+            "Requirement already satisfied: threadpoolctl>=3.1.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (3.6.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "## I assume this version of scikit-learn will be suffient\n",
+        "##since this project will focus on data science rather than\n",
+        "#machine learning but it is something to keep in mind."
+      ],
+      "metadata": {
+        "id": "1EqT5SITdib8"
+      },
+      "execution_count": 56,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Load dataset"
+      ],
+      "metadata": {
+        "id": "0o3cG0DDlL8W"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n"
+      ],
+      "metadata": {
+        "id": "t3WBOsDhbH5O"
+      },
+      "execution_count": 57,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "spotify_df = pd.read_csv(\"/content/data.csv\")"
+      ],
+      "metadata": {
+        "id": "Z81YlahplSp5",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 515
+        },
+        "outputId": "bc030223-0137-4921-bd07-83735a669141"
+      },
+      "execution_count": 58,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "ParserError",
+          "evalue": "Error tokenizing data. C error: EOF inside string starting at row 137432",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mParserError\u001b[0m                               Traceback (most recent call last)",
+            "\u001b[0;32m/tmp/ipython-input-58-3459083619.py\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mspotify_df\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mread_csv\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"/content/data.csv\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;32m/usr/local/lib/python3.11/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36mread_csv\u001b[0;34m(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)\u001b[0m\n\u001b[1;32m   1024\u001b[0m     \u001b[0mkwds\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mupdate\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkwds_defaults\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1025\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1026\u001b[0;31m     \u001b[0;32mreturn\u001b[0m \u001b[0m_read\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfilepath_or_buffer\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mkwds\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1027\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1028\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.11/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36m_read\u001b[0;34m(filepath_or_buffer, kwds)\u001b[0m\n\u001b[1;32m    624\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    625\u001b[0m     \u001b[0;32mwith\u001b[0m \u001b[0mparser\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 626\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mparser\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mread\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mnrows\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    627\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    628\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.11/dist-packages/pandas/io/parsers/readers.py\u001b[0m in \u001b[0;36mread\u001b[0;34m(self, nrows)\u001b[0m\n\u001b[1;32m   1921\u001b[0m                     \u001b[0mcolumns\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1922\u001b[0m                     \u001b[0mcol_dict\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1923\u001b[0;31m                 \u001b[0;34m)\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_engine\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mread\u001b[0m\u001b[0;34m(\u001b[0m  \u001b[0;31m# type: ignore[attr-defined]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1924\u001b[0m                     \u001b[0mnrows\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1925\u001b[0m                 )\n",
+            "\u001b[0;32m/usr/local/lib/python3.11/dist-packages/pandas/io/parsers/c_parser_wrapper.py\u001b[0m in \u001b[0;36mread\u001b[0;34m(self, nrows)\u001b[0m\n\u001b[1;32m    232\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    233\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mlow_memory\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 234\u001b[0;31m                 \u001b[0mchunks\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_reader\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mread_low_memory\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mnrows\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    235\u001b[0m                 \u001b[0;31m# destructive to chunks\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    236\u001b[0m                 \u001b[0mdata\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0m_concatenate_chunks\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mchunks\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32mparsers.pyx\u001b[0m in \u001b[0;36mpandas._libs.parsers.TextReader.read_low_memory\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mparsers.pyx\u001b[0m in \u001b[0;36mpandas._libs.parsers.TextReader._read_rows\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mparsers.pyx\u001b[0m in \u001b[0;36mpandas._libs.parsers.TextReader._tokenize_rows\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mparsers.pyx\u001b[0m in \u001b[0;36mpandas._libs.parsers.TextReader._check_tokenize_status\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mparsers.pyx\u001b[0m in \u001b[0;36mpandas._libs.parsers.raise_parser_error\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;31mParserError\u001b[0m: Error tokenizing data. C error: EOF inside string starting at row 137432"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "spotify_df.head(7)"
+      ],
+      "metadata": {
+        "id": "JJ0obMIVlw2N"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "spotify_df.tail(7)"
+      ],
+      "metadata": {
+        "id": "FpZuLZZh8UoO"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "spotify_df.describe()"
+      ],
+      "metadata": {
+        "id": "utmIt3KO8mON"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Verify the data needed for my research question is present\n",
+        "Inspect the columns to confirm if release_date, valence, and energy are present.\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "XJ0eYjSDmhWb"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Verify Dataset Columns\n",
+        "To confirm this dataset supports the research question, we must ensure that it includes a release date and emotion-related metrics like valence and energy.\n"
+      ],
+      "metadata": {
+        "id": "XAZtJ7FvnHgE"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Check the column names\n",
+        "spotify_df.columns"
+      ],
+      "metadata": {
+        "id": "r0UNOXATnNH-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Define Periods for Comparison\n",
+        "To evaluate emotional tone before and after the murder of George Floyd (May 25, 2020), we will split the dataset into two time periods.\n"
+      ],
+      "metadata": {
+        "id": "gZybxQkqnV70"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Ensure release_date is in datetime format\n",
+        "spotify_df['release_date'] = pd.to_datetime(spotify_df['release_date'], errors='coerce')\n",
+        "\n",
+        "# Filter for year 2020 only\n",
+        "spotify_2020 = spotify_df[spotify_df['release_date'].dt.year == 2020].copy()\n",
+        "\n",
+        "# Create period labels based on the cutoff date\n",
+        "cutoff = pd.to_datetime(\"2020-05-25\")\n",
+        "spotify_2020['period'] = spotify_2020['release_date'].apply(\n",
+        "    lambda x: 'Before' if x < cutoff else 'After'\n",
+        ")\n",
+        "\n",
+        "# Show the distribution by period\n",
+        "spotify_2020['period'].value_counts()\n"
+      ],
+      "metadata": {
+        "id": "igpJgJCBnbi6"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Data Types & Type Conversion\n",
+        "\n",
+        "We examined the dataframe’s types and determined that `release_date` should be a datetime format for time‑based analysis.\n",
+        "\n",
+        "```python\n",
+        "spotify_df['release_date'] = pd.to_datetime(spotify_df['release_date'], errors='coerce')\n"
+      ],
+      "metadata": {
+        "id": "Z_gV2qJl-oFd"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Emotional Tone by Period\n",
+        "This boxplot visualizes whether valence—the positivity of songs—changed significantly after May 25, 2020.\n"
+      ],
+      "metadata": {
+        "id": "WCIldS2ennuL"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "\n",
+        "# Set visual style\n",
+        "sns.set(style=\"whitegrid\")\n",
+        "\n",
+        "# Create boxplot for valence\n",
+        "plt.figure(figsize=(8, 6))\n",
+        "sns.boxplot(x='period', y='valence', data=spotify_2020, palette=\"coolwarm\")\n",
+        "plt.title('Valence of Songs Before vs After May 25, 2020')\n",
+        "plt.xlabel('Period')\n",
+        "plt.ylabel('Valence')\n",
+        "plt.tight_layout()\n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "id": "MTcysP1pn0mW"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "5WuTyAQ8mzI_"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "\n",
+        "# Drop rows with missing valence values\n",
+        "filtered_df = spotify_2020.dropna(subset=['valence'])\n",
+        "\n",
+        "# Create the boxplot\n",
+        "plt.figure(figsize=(8, 6))\n",
+        "sns.boxplot(x='period', y='valence', data=filtered_df)\n",
+        "plt.title('Valence of Songs Before and After May 25, 2020')\n",
+        "plt.xlabel('Period')\n",
+        "plt.ylabel('Valence')\n",
+        "plt.tight_layout()\n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "id": "Bq5s6nNgoxLN"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(spotify_2020.shape)"
+      ],
+      "metadata": {
+        "id": "I2eVPWKGpIzc"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Dataset shape:\", spotify_2020.shape)"
+      ],
+      "metadata": {
+        "id": "HLdqIil6pxM3"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Checking to see what the data contains"
+      ],
+      "metadata": {
+        "id": "Mi89Sb6dqu6x"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Total rows:\", spotify_df.shape[0])\n",
+        "print(\"Missing release_date values:\", spotify_df['release_date'].isna().sum())\n",
+        "print(\"Earliest release_date:\", spotify_df['release_date'].min())\n",
+        "print(\"Latest release_date:\", spotify_df['release_date'].max())\n"
+      ],
+      "metadata": {
+        "id": "jEhzVVNHqqnW"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "When we filtered with:\n",
+        "\n",
+        "python\n",
+        "<spotify_df['release_date'].dt.year == 2020>\n",
+        "there were zero matches, because the  dataset only includes songs up to 2017.\n",
+        "\n",
+        "Since:\n",
+        "\n",
+        "spotify_2020 was empty,\n",
+        "\n",
+        "The boxplot had nothing to draw.\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "sd87W80_rzW_"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Data cleaning & Preparation"
+      ],
+      "metadata": {
+        "id": "Qka-YIkgv5kV"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Ensure release_date is datetime\n",
+        "spotify_df['release_date'] = pd.to_datetime(spotify_df['release_date'], errors='coerce')\n",
+        "\n",
+        "# Drop rows with missing valence, energy, or release_date\n",
+        "spotify_clean = spotify_df.dropna(subset=['valence', 'energy', 'release_date'])\n",
+        "\n",
+        "# Extract year from release_date\n",
+        "spotify_clean['year'] = spotify_clean['release_date'].dt.year\n",
+        "\n",
+        "# Filter for relevant range\n",
+        "spotify_clean = spotify_clean[(spotify_clean['year'] >= 1921) & (spotify_clean['year'] <= 2017)]\n",
+        "\n",
+        "# Verify result\n",
+        "spotify_clean[['year', 'valence', 'energy']].describe()\n"
+      ],
+      "metadata": {
+        "id": "s7LcA8OssBil"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Box Plot: Valence over Time"
+      ],
+      "metadata": {
+        "id": "jRNGBlWJwCAY"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "\n",
+        "# Aggregate valence by year\n",
+        "yearly_valence = spotify_clean.groupby('year')['valence'].mean().reset_index()\n",
+        "\n",
+        "# Plot\n",
+        "plt.figure(figsize=(12, 6))\n",
+        "sns.lineplot(x='year', y='valence', data=yearly_valence)\n",
+        "plt.title('Average Valence of Songs (1921–2017)')\n",
+        "plt.xlabel('Year')\n",
+        "plt.ylabel('Average Valence')\n",
+        "plt.grid(True)\n",
+        "plt.tight_layout()\n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "id": "NKti7pVHwJJp"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Interpretation of Visualization\n",
+        "\n",
+        "The line plot of average valence (musical positivity) from 1921 to 2017 reveals distinct historical patterns. There is a noticeable dip in emotional tone during the 1930s and 1940s, which aligns with the Great Depression and World War II era. From the mid-1950s through the 1980s, valence trends upward, possibly reflecting post-war recovery, economic growth, and cultural optimism.\n",
+        "\n",
+        "After 1990, valence appears to fluctuate with a slight overall decline, suggesting a gradual shift in popular musical mood. This may correspond to changing listener preferences, industry trends, or broader sociocultural developments.\n",
+        "\n",
+        "Further statistical analysis would be required to validate these observations, but this exploratory visualization suggests that historical context may influence the emotional tone of popular music over time.\n"
+      ],
+      "metadata": {
+        "id": "fn6XfE-wwrgo"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Plot Average Energy Over Time"
+      ],
+      "metadata": {
+        "id": "CabKrHgWxJMB"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Aggregate energy by year\n",
+        "yearly_energy = spotify_clean.groupby('year')['energy'].mean().reset_index()\n",
+        "\n",
+        "# Plot\n",
+        "plt.figure(figsize=(12, 6))\n",
+        "sns.lineplot(x='year', y='energy', data=yearly_energy)\n",
+        "plt.title('Average Energy of Songs (1921–2017)')\n",
+        "plt.xlabel('Year')\n",
+        "plt.ylabel('Average Energy')\n",
+        "plt.grid(True)\n",
+        "plt.tight_layout()\n",
+        "plt.show()\n"
+      ],
+      "metadata": {
+        "id": "z_P4Cf8VxLx5"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Preliminary Reflection on Trends\n",
+        "\n",
+        "The rising trend in song energy from the 1950s onward aligns with the emergence and dominance of electrified musical styles like rock, disco, electronic, and hip-hop. These genres tend to feature higher tempos, amplified instrumentation, and more rhythmic intensity—elements strongly correlated with Spotify's \"energy\" metric.\n",
+        "\n",
+        "The dip in energy during the 1930s–1940s may reflect both the recording technology of the era and the somber cultural mood during the Great Depression and World War II.\n",
+        "\n",
+        "While these interpretations remain speculative at this stage, they suggest a strong case for deeper domain research in the next phase of this project.\n"
+      ],
+      "metadata": {
+        "id": "nBzpyn3sxo1x"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "A more detailed exploration of historical musical trends will be conducted in Stage 3, using peer-reviewed musicology or sociocultural studies to validate the patterns observed here."
+      ],
+      "metadata": {
+        "id": "9rsDqb2o14na"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "rsfVlmsrxMac"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
